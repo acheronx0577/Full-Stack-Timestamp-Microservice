@@ -26,17 +26,6 @@ This repository contains one of the portfolio projects needed to demonstrate bac
 
 ---
 
-## 🚀 Features
-
-- ⚡ **RESTful API** - Convert dates to Unix timestamps and UTC strings
-- 🖥️ **Terminal UI** - Clean, responsive terminal-style interface  
-- 📅 **Multiple Date Formats** - Supports dates, Unix timestamps, and empty requests
-- 📊 **Request History** - Track previous conversions with color-coded results
-- 🎨 **Theme System** - Multiple color themes (dark, blue, green, purple)
-- 🔄 **Real-time Updates** - Live timestamp updates and uptime counter
-
----
-
 ## 🔗 API Endpoints
 
 - `GET /api` - Current timestamp
