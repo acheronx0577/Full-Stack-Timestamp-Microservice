@@ -73,8 +73,30 @@ const themes = {
         '--accent-warning': '#8c8c4a',
         '--accent-error': '#8c4a4a',
         '--response-bg': '#1a241e'
+    },
+    purple: {
+        '--bg-primary': '#0f0a1a',
+        '--bg-secondary': '#1a152a',
+        '--bg-tertiary': '#241e36',
+        '--bg-card': '#2b2540',
+        '--text-primary': '#f0e8f8',
+        '--text-secondary': '#c8b8d8',
+        '--text-dim': '#7a6c8a',
+        '--border-primary': '#362a4a',
+        '--border-active': '#5a4a6a',
+        '--accent-primary': '#8c6ca8',
+        '--accent-secondary': '#bb8bd0',
+        '--accent-success': '#678ca8',
+        '--accent-warning': '#d4b86a',
+        '--accent-error': '#d46a6a',
+        '--response-bg': '#1a1a2a'
     }
 };
+
+// Format Unix timestamp with commas
+function formatUnixTimestamp(unix) {
+    return unix.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 // API Functions
 async function fetchTimestamp(dateString = '') {
@@ -93,7 +115,7 @@ function displayResponse(data) {
         responseUtc.style.color = 'var(--accent-error)';
     } else {
         apiResponseElement.style.borderColor = 'var(--accent-success)';
-        responseUnix.textContent = data.unix;
+        responseUnix.textContent = formatUnixTimestamp(data.unix);
         responseUtc.textContent = data.utc;
         responseUnix.style.color = 'var(--accent-success)';
         responseUtc.style.color = 'var(--accent-success)';
@@ -113,8 +135,8 @@ function addToHistory(dateString, response) {
         utc: response.utc || response.error
     });
     
-    // Keep only last 8 items
-    if (requestHistory.length > 8) {
+    // Keep only last 6 items (more compact)
+    if (requestHistory.length > 6) {
         requestHistory.pop();
     }
     
@@ -128,14 +150,13 @@ function updateHistoryDisplay() {
         historyItem.className = 'history-item';
         
         const isError = item.unix === 'ERROR';
-        const statusColor = isError ? 'var(--accent-error)' : 'var(--accent-success)';
+        const displayUnix = isError ? 'ERROR' : formatUnixTimestamp(item.unix);
+        const unixColor = isError ? 'var(--accent-error)' : 'var(--text-primary)';
         
         historyItem.innerHTML = `
             <span class="history-time">${item.time}</span>
             <span class="history-input">${item.input}</span>
-            <span class="history-status" style="color: ${statusColor}">
-                ${isError ? 'ERROR' : 'SUCCESS'}
-            </span>
+            <span class="history-unix" style="color: ${unixColor}">${displayUnix}</span>
         `;
         requestHistoryElement.appendChild(historyItem);
     });
@@ -160,7 +181,7 @@ function copyToClipboard() {
         setTimeout(() => {
             footerStatus.textContent = 'READY';
             footerStatus.style.color = '';
-        }, 2000);
+        }, 1500);
     });
 }
 
@@ -178,12 +199,17 @@ function toggleTheme() {
     footerStatus.textContent = `THEME: ${currentTheme.toUpperCase()}`;
     setTimeout(() => {
         footerStatus.textContent = 'READY';
-    }, 2000);
+    }, 1500);
 }
 
 // Event Handlers
 async function handleSubmit() {
     const dateString = dateInput.value.trim();
+    
+    if (!dateInput.value.trim()) {
+        // If empty, show it's getting current time
+        dateInput.placeholder = "Getting current time...";
+    }
     
     footerStatus.textContent = 'FETCHING...';
     footerStatus.style.color = 'var(--accent-warning)';
@@ -206,12 +232,14 @@ async function handleSubmit() {
     setTimeout(() => {
         footerStatus.textContent = 'READY';
         footerStatus.style.color = '';
-    }, 2000);
+        dateInput.placeholder = "e.g., 2015-12-25 or 1451001600000";
+    }, 1500);
 }
 
 function handleClear() {
     dateInput.value = '';
     apiResponseElement.style.display = 'none';
+    dateInput.focus();
     footerStatus.textContent = 'CLEARED';
     setTimeout(() => {
         footerStatus.textContent = 'READY';
@@ -222,6 +250,27 @@ function handleInputKeypress(e) {
     if (e.key === 'Enter') {
         handleSubmit();
     }
+}
+
+// Quick example buttons
+function setupExampleButtons() {
+    const examples = [
+        { input: '2015-12-25', label: '2015-12-25' },
+        { input: '1451001600000', label: '145,100,160,0000' },
+        { input: '', label: 'Now' }
+    ];
+    
+    const container = document.getElementById('example-buttons');
+    examples.forEach(example => {
+        const btn = document.createElement('button');
+        btn.className = 'example-btn';
+        btn.textContent = example.label;
+        btn.addEventListener('click', () => {
+            dateInput.value = example.input;
+            handleSubmit();
+        });
+        container.appendChild(btn);
+    });
 }
 
 // Initialize
@@ -241,6 +290,9 @@ function init() {
     
     // Focus input
     dateInput.focus();
+    
+    // Setup example buttons
+    setupExampleButtons();
     
     // Initialize uptime counter
     updateUptime();
